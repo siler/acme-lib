@@ -224,5 +224,5 @@ pub fn test_make_directory() {
     let res = ureq::get(&server.dir_url).call();
     println!("received request response");
     println!("{:?}", res);
-    assert!(res.ok());
+    assert!(res.is_ok());
 }
