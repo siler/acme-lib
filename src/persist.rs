@@ -3,14 +3,16 @@
 //! The persistence is a simple key-value store. The intention is to make it simple to implement
 //! other persistence mechanisms than the provided ones, such as against a databases.
 
-use std::collections::hash_map::{DefaultHasher, HashMap};
-use std::fs;
-use std::hash::{Hash, Hasher};
-use std::io::{Read, Write};
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::{
+    collections::hash_map::{DefaultHasher, HashMap},
+    fs,
+    hash::{Hash, Hasher},
+    io::Read,
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex},
+};
 
 use crate::{Error, Result};
 

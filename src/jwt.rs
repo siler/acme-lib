@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::acc::AcmeKey;
-use crate::cert::EC_GROUP_P256;
-use crate::util::base64url;
+use crate::{acc::AcmeKey, cert::EC_GROUP_P256, util::base64url};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub(crate) struct JwsProtected {

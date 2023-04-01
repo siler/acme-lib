@@ -18,16 +18,16 @@
 //! [`CsrOrder`]: struct.CsrOrder.html
 //! [`CertOrder`]: struct.CertOrder.html
 use openssl::pkey::{self, PKey};
-use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
+use std::{sync::Arc, thread, time::Duration};
 
-use crate::acc::AccountInner;
-use crate::api::{ApiAuth, ApiEmptyString, ApiFinalize, ApiOrder};
-use crate::cert::{create_csr, Certificate};
-use crate::persist::{Persist, PersistKey, PersistKind};
-use crate::util::{base64url, read_json};
-use crate::Result;
+use crate::{
+    acc::AccountInner,
+    api::{ApiAuth, ApiEmptyString, ApiFinalize, ApiOrder},
+    cert::{create_csr, Certificate},
+    persist::{Persist, PersistKey, PersistKind},
+    util::{base64url, read_json},
+    Result,
+};
 
 mod auth;
 

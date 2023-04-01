@@ -1,14 +1,17 @@
-use openssl::ecdsa::EcdsaSig;
-use openssl::sha::sha256;
+use openssl::{ecdsa::EcdsaSig, sha::sha256};
 use serde::Serialize;
-use std::collections::VecDeque;
-use std::sync::{Arc, Mutex};
+use std::{
+    collections::VecDeque,
+    sync::{Arc, Mutex},
+};
 
-use crate::acc::AcmeKey;
-use crate::jwt::*;
-use crate::req::{req_expect_header, req_handle_error, req_head, req_post};
-use crate::util::base64url;
-use crate::Result;
+use crate::{
+    acc::AcmeKey,
+    jwt::*,
+    req::{req_expect_header, req_handle_error, req_head, req_post},
+    util::base64url,
+    Result,
+};
 
 /// JWS payload and nonce handling for requests to the API.
 ///

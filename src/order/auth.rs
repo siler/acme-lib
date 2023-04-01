@@ -1,16 +1,15 @@
 //
 use openssl::sha::sha256;
-use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
+use std::{sync::Arc, thread, time::Duration};
 
-use crate::acc::AccountInner;
-use crate::acc::AcmeKey;
-use crate::api::{ApiAuth, ApiChallenge, ApiEmptyObject, ApiEmptyString};
-use crate::jwt::*;
-use crate::persist::Persist;
-use crate::util::{base64url, read_json};
-use crate::Result;
+use crate::{
+    acc::{AccountInner, AcmeKey},
+    api::{ApiAuth, ApiChallenge, ApiEmptyObject, ApiEmptyString},
+    jwt::*,
+    persist::Persist,
+    util::{base64url, read_json},
+    Result,
+};
 
 /// An authorization ([ownership proof]) for a domain name.
 ///

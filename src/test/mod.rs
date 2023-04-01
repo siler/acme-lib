@@ -3,8 +3,7 @@
 use futures::Future;
 use hyper::{service::service_fn_ok, Body, Method, Request, Response, Server};
 use lazy_static::lazy_static;
-use std::net::TcpListener;
-use std::thread;
+use std::{net::TcpListener, thread};
 
 lazy_static! {
     static ref RE_URL: regex::Regex = regex::Regex::new("<URL>").unwrap();

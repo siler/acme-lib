@@ -1,8 +1,6 @@
-use openssl::ec::EcKey;
-use openssl::pkey;
+use openssl::{ec::EcKey, pkey};
 
-use crate::cert::EC_GROUP_P256;
-use crate::Result;
+use crate::{cert::EC_GROUP_P256, Result};
 
 #[derive(Clone, Debug)]
 pub(crate) struct AcmeKey {

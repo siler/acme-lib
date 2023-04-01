@@ -1,12 +1,13 @@
 use lazy_static::lazy_static;
-use openssl::ec::{Asn1Flag, EcGroup, EcKey};
-use openssl::hash::MessageDigest;
-use openssl::nid::Nid;
-use openssl::pkey::{self, PKey};
-use openssl::rsa::Rsa;
-use openssl::stack::Stack;
-use openssl::x509::extension::SubjectAlternativeName;
-use openssl::x509::{X509Req, X509ReqBuilder, X509};
+use openssl::{
+    ec::{Asn1Flag, EcGroup, EcKey},
+    hash::MessageDigest,
+    nid::Nid,
+    pkey::{self, PKey},
+    rsa::Rsa,
+    stack::Stack,
+    x509::{extension::SubjectAlternativeName, X509Req, X509ReqBuilder, X509},
+};
 
 use crate::Result;
 
