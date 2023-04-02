@@ -11,7 +11,7 @@ pub(crate) struct AcmeKey {
 
 impl AcmeKey {
     pub(crate) fn new() -> AcmeKey {
-        let pri_key = EcKey::generate(&*EC_GROUP_P256).expect("EcKey");
+        let pri_key = EcKey::generate(&EC_GROUP_P256).expect("EcKey");
         Self::from_key(pri_key)
     }
 

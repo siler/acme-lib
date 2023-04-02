@@ -97,7 +97,7 @@ impl Transport {
                 }
             }
 
-            return Ok(result?);
+            return result;
         }
     }
 }
@@ -117,11 +117,13 @@ impl NoncePool {
         }
     }
 
-    fn extract_nonce(&self, res: &std::result::Result<ureq::Response, ureq::Error>) {
+    fn extract_nonce(&self, res: &std::result::Result<ureq::Response, Box<ureq::Error>>) {
         let res = match res {
             Ok(res) => res,
-            Err(ureq::Error::Status(_, res)) => res,
-            Err(ureq::Error::Transport(_)) => return,
+            Err(err) => match err.as_ref() {
+                ureq::Error::Status(_, res) => res,
+                ureq::Error::Transport(_) => return,
+            },
         };
 
         if let Some(nonce) = res.header("replay-nonce") {
@@ -147,14 +149,16 @@ impl NoncePool {
 
         let res = match res {
             Ok(res) => res,
-            Err(ureq::Error::Status(_, res)) => res,
-            Err(ureq::Error::Transport(_)) => {
-                return Err(Error::ApiProblem(ApiProblem {
-                    _type: "httpReqError".into(),
-                    detail: Some("Transport error".into()),
-                    subproblems: None,
-                }))
-            }
+            Err(err) => match *err {
+                ureq::Error::Status(_, res) => res,
+                ureq::Error::Transport(_) => {
+                    return Err(Error::ApiProblem(ApiProblem {
+                        _type: "httpReqError".into(),
+                        detail: Some("Transport error".into()),
+                        subproblems: None,
+                    }))
+                }
+            },
         };
 
         Ok(req_expect_header(&res, "replay-nonce")?)

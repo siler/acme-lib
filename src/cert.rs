@@ -35,13 +35,13 @@ pub fn create_rsa_key(bits: u32) -> PKey<pkey::Private> {
 
 /// Make a P-256 private key (from which we can derive a public key).
 pub fn create_p256_key() -> PKey<pkey::Private> {
-    let pri_key_ec = EcKey::generate(&*EC_GROUP_P256).expect("EcKey");
+    let pri_key_ec = EcKey::generate(&EC_GROUP_P256).expect("EcKey");
     PKey::from_ec_key(pri_key_ec).expect("from_ec_key")
 }
 
 /// Make a P-384 private key pair (from which we can derive a public key).
 pub fn create_p384_key() -> PKey<pkey::Private> {
-    let pri_key_ec = EcKey::generate(&*EC_GROUP_P384).expect("EcKey");
+    let pri_key_ec = EcKey::generate(&EC_GROUP_P384).expect("EcKey");
     PKey::from_ec_key(pri_key_ec).expect("from_ec_key")
 }
 
