@@ -1,7 +1,7 @@
 //
 use std::{fmt, io};
 
-use crate::api::ApiProblem;
+use crate::{api::ApiProblem, req::req_safe_read_body};
 
 /// acme-lib result.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -65,5 +65,46 @@ impl From<String> for Error {
 impl From<&str> for Error {
     fn from(s: &str) -> Self {
         Error::Other(s.to_string())
+    }
+}
+
+impl From<ureq::Error> for Error {
+    fn from(value: ureq::Error) -> Self {
+        let res = match value {
+            // ok responses pass through
+            ureq::Error::Status(_, res) => res,
+            ureq::Error::Transport(_) => {
+                return Error::ApiProblem(ApiProblem {
+                    _type: "httpReqError".into(),
+                    detail: Some("Transport error".into()),
+                    subproblems: None,
+                })
+            }
+        };
+
+        if res.content_type() == "application/problem+json" {
+            // if we were sent a problem+json, deserialize it
+            let body = req_safe_read_body(res);
+            Error::ApiProblem(serde_json::from_str(&body).unwrap_or_else(|e| ApiProblem {
+                _type: "problemJsonFail".into(),
+                detail: Some(format!(
+                    "Failed to deserialize application/problem+json ({}) body: {}",
+                    e.to_string(),
+                    body
+                )),
+                subproblems: None,
+            }))
+        } else {
+            // some other problem
+            let status = format!("{} {}", res.status(), res.status_text());
+            let body = req_safe_read_body(res);
+            let detail = format!("{} body: {}", status, body);
+
+            Error::ApiProblem(ApiProblem {
+                _type: "httpReqError".into(),
+                detail: Some(detail),
+                subproblems: None,
+            })
+        }
     }
 }

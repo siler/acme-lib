@@ -7,10 +7,11 @@ use std::{
 
 use crate::{
     acc::AcmeKey,
+    api::ApiProblem,
     jwt::*,
-    req::{req_expect_header, req_handle_error, req_head, req_post},
+    req::{req_expect_header, req_head, req_post},
     util::base64url,
-    Result,
+    Error, Result,
 };
 
 /// JWS payload and nonce handling for requests to the API.
@@ -80,14 +81,15 @@ impl Transport {
             self.nonce_pool.extract_nonce(&response);
 
             // Turn errors into ApiProblem.
-            let result = req_handle_error(response);
+            let result = response.map_err(Error::from);
 
-            if let Err(problem) = &result {
+            if let Err(Error::ApiProblem(problem)) = &result {
                 if problem.is_bad_nonce() {
                     // retry the request with a new nonce.
                     debug!("Retrying on bad nonce");
                     continue;
                 }
+
                 // it seems we sometimes make bad JWTs. Why?!
                 if problem.is_jwt_verification_error() {
                     debug!("Retrying on: {}", problem);
@@ -147,7 +149,7 @@ impl NoncePool {
             Ok(res) => res,
             Err(ureq::Error::Status(_, res)) => res,
             Err(ureq::Error::Transport(_)) => {
-                return Err(crate::Error::ApiProblem(crate::api::ApiProblem {
+                return Err(Error::ApiProblem(ApiProblem {
                     _type: "httpReqError".into(),
                     detail: Some("Transport error".into()),
                     subproblems: None,
