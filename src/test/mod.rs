@@ -5,13 +5,11 @@ use hyper::{
     service::{make_service_fn, service_fn},
     Body, Method, Request, Response, Server,
 };
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::{convert::Infallible, net::TcpListener, sync::Arc};
 use tokio::runtime::Runtime;
 
-lazy_static! {
-    static ref RE_URL: regex::Regex = regex::Regex::new("<URL>").unwrap();
-}
+static RE_URL: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new("<URL>").unwrap());
 
 pub struct TestServer {
     _rt: Runtime,

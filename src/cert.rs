@@ -1,4 +1,4 @@
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use openssl::{
     ec::{Asn1Flag, EcGroup, EcKey},
     hash::MessageDigest,
@@ -12,10 +12,8 @@ use time::{macros::format_description, OffsetDateTime, PrimitiveDateTime};
 
 use crate::Result;
 
-lazy_static! {
-    pub(crate) static ref EC_GROUP_P256: EcGroup = ec_group(Nid::X9_62_PRIME256V1);
-    pub(crate) static ref EC_GROUP_P384: EcGroup = ec_group(Nid::SECP384R1);
-}
+pub(crate) static EC_GROUP_P256: Lazy<EcGroup> = Lazy::new(|| ec_group(Nid::X9_62_PRIME256V1));
+pub(crate) static EC_GROUP_P384: Lazy<EcGroup> = Lazy::new(|| ec_group(Nid::SECP384R1));
 
 fn ec_group(nid: Nid) -> EcGroup {
     let mut g = EcGroup::from_curve_name(nid).expect("EcGroup");
