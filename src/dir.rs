@@ -5,7 +5,7 @@ use crate::{
     acc::AcmeKey,
     api::{ApiAccount, ApiDirectory},
     persist::{Persist, PersistKey, PersistKind},
-    req::{req_expect_header, req_get},
+    req::{get, ExtractHeader},
     trans::{NoncePool, Transport},
     util::read_json,
     Account, Result,
@@ -49,7 +49,7 @@ impl<P: Persist> Directory<P> {
     /// Create a directory over a persistence implementation and directory url.
     pub fn from_url(persist: P, url: DirectoryUrl) -> Result<Directory<P>> {
         let dir_url = url.to_url();
-        let res = req_get(dir_url)?;
+        let res = get(dir_url)?;
         let api_directory: ApiDirectory = read_json(res)?;
         let nonce_pool = Arc::new(NoncePool::new(&api_directory.newNonce));
         Ok(Directory {
@@ -127,7 +127,7 @@ impl<P: Persist> Directory<P> {
 
         let mut transport = Transport::new(&self.nonce_pool, acme_key);
         let res = transport.call_jwk(&self.api_directory.newAccount, &acc)?;
-        let kid = req_expect_header(&res, "location")?;
+        let kid = res.extract_header("location")?;
         debug!("Key id is: {}", kid);
         let api_account: ApiAccount = read_json(res)?;
 

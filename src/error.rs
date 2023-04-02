@@ -1,7 +1,7 @@
 //
 use std::{fmt, io};
 
-use crate::{api::ApiProblem, req::req_safe_read_body};
+use crate::{api::ApiProblem, req::ExtractBody};
 
 /// acme-lib result.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -83,7 +83,7 @@ impl From<ureq::Error> for Error {
 
         let problem = if res.content_type() == "application/problem+json" {
             // if we were sent a problem+json, deserialize it
-            let body = req_safe_read_body(res);
+            let body = res.extract_body();
             serde_json::from_str(&body).unwrap_or_else(|e| ApiProblem {
                 _type: "problemJsonFail".into(),
                 detail: Some(format!(
@@ -95,7 +95,7 @@ impl From<ureq::Error> for Error {
         } else {
             // some other problem
             let status = format!("{} {}", res.status(), res.status_text());
-            let body = req_safe_read_body(res);
+            let body = res.extract_body();
             let detail = format!("{} body: {}", status, body);
 
             ApiProblem {

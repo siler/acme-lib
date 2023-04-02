@@ -65,11 +65,15 @@ impl<P: Persist> Auth<P> {
     /// The challenge will be accessed over HTTP (not HTTPS), for obvious reasons.
     ///
     /// ```no_run
-    /// use acme_lib::persist::Persist;
-    /// use acme_lib::order::Auth;
-    /// use acme_lib::Error;
-    /// use std::fs::File;
-    /// use std::io::Write;
+    /// use acme_lib::{
+    ///   order::Auth,
+    ///   persist::Persist,
+    ///   Error,
+    /// };
+    /// use std::{
+    ///   fs::File,
+    ///   io::Write,
+    /// };
     ///
     /// fn web_authorize<P: Persist>(auth: &Auth<P>) -> Result<(), Error> {
     ///   let challenge = auth.http_challenge();
@@ -102,9 +106,11 @@ impl<P: Persist> Auth<P> {
     /// The <proof> contains the signed token proving this account update it.
     ///
     /// ```no_run
-    /// use acme_lib::persist::Persist;
-    /// use acme_lib::order::Auth;
-    /// use acme_lib::Error;
+    /// use acme_lib::{
+    ///   order::Auth,
+    ///   persist::Persist,
+    ///   Error,
+    /// };
     ///
     /// fn dns_authorize<P: Persist>(auth: &Auth<P>) -> Result<(), Error> {
     ///   let challenge = auth.dns_challenge();
@@ -227,8 +233,8 @@ impl<P: Persist, A> Challenge<P, A> {
     /// The user must first update the DNS record or HTTP web server depending
     /// on the type challenge being validated.
     pub fn validate(self, delay_millis: u64) -> Result<()> {
-        let url_chall = &self.api_challenge.url;
-        let res = self.inner.transport.call(url_chall, &ApiEmptyObject)?;
+        let url_call = &self.api_challenge.url;
+        let res = self.inner.transport.call(url_call, &ApiEmptyObject)?;
         let _: ApiChallenge = read_json(res)?;
 
         let auth = wait_for_auth_status(&self.inner, &self.auth_url, delay_millis)?;
@@ -260,8 +266,8 @@ impl<P: Persist, A> Challenge<P, A> {
 }
 
 fn key_authorization(token: &str, key: &AcmeKey, extra_sha256: bool) -> String {
-    let jwk: Jwk = key.into();
-    let jwk_thumb: JwkThumb = (&jwk).into();
+    let jwk = Jwk::from(key);
+    let jwk_thumb = JwkThumb::from(&jwk);
     let jwk_json = serde_json::to_string(&jwk_thumb).expect("jwk_thumb");
     let digest = base64url(&sha256(jwk_json.as_bytes()));
     let key_auth = format!("{}.{}", token, digest);
@@ -290,8 +296,7 @@ fn wait_for_auth_status<P: Persist>(
 
 #[cfg(test)]
 mod test {
-    use crate::persist::*;
-    use crate::*;
+    use crate::{persist::*, *};
 
     #[test]
     fn test_get_challenges() -> Result<()> {

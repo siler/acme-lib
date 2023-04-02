@@ -322,8 +322,7 @@ impl<P: Persist> CertOrder<P> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::persist::*;
-    use crate::*;
+    use crate::{persist::*, *};
 
     #[test]
     fn test_get_authorizations() -> Result<()> {

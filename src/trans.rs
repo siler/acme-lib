@@ -9,7 +9,7 @@ use crate::{
     acc::AcmeKey,
     api::ApiProblem,
     jwt::*,
-    req::{req_expect_header, req_head, req_post},
+    req::{head, post, ExtractHeader},
     util::base64url,
     Error, Result,
 };
@@ -74,7 +74,7 @@ impl Transport {
             debug!("Call endpoint {}", url);
 
             // Post it to the URL
-            let response = req_post(url, &body);
+            let response = post(url, &body);
 
             // Regardless of the request being a success or not, there might be
             // a nonce in the response.
@@ -137,17 +137,13 @@ impl NoncePool {
     }
 
     fn get_nonce(&self) -> Result<String> {
-        {
-            let mut pool = self.pool.lock().unwrap();
-            if let Some(nonce) = pool.pop_front() {
-                trace!("Use previous nonce");
-                return Ok(nonce);
-            }
+        if let Some(nonce) = self.pool.lock().unwrap().pop_front() {
+            trace!("Use previous nonce");
+            return Ok(nonce);
         }
-        debug!("Request new nonce");
-        let res = req_head(&self.nonce_url);
 
-        let res = match res {
+        debug!("Request new nonce");
+        let res = match head(&self.nonce_url) {
             Ok(res) => res,
             Err(err) => match *err {
                 ureq::Error::Status(_, res) => res,
@@ -161,7 +157,7 @@ impl NoncePool {
             },
         };
 
-        Ok(req_expect_header(&res, "replay-nonce")?)
+        Ok(res.extract_header("replay-nonce")?)
     }
 }
 
@@ -181,7 +177,7 @@ fn jws_with_jwk<T: Serialize + ?Sized>(
     key: &AcmeKey,
     payload: &T,
 ) -> Result<String> {
-    let jwk: Jwk = key.into();
+    let jwk = Jwk::from(key);
     let protected = JwsProtected::new_jwk(jwk, url, nonce);
     jws_with(protected, key, payload)
 }
@@ -195,6 +191,7 @@ fn jws_with<T: Serialize + ?Sized>(
         let pro_json = serde_json::to_string(&protected)?;
         base64url(pro_json.as_bytes())
     };
+
     let payload = {
         let pay_json = serde_json::to_string(payload)?;
         if pay_json == "\"\"" {

@@ -59,6 +59,12 @@ impl<'a> PersistKey<'a> {
         let realm = h.finish();
         PersistKey { realm, kind, key }
     }
+
+    pub(crate) fn path_in(&self, dir: &Path) -> PathBuf {
+        let mut path = dir.join(self.to_string());
+        path.set_extension(self.kind.name());
+        path
+    }
 }
 
 impl<'a> std::fmt::Display for PersistKey<'a> {
@@ -113,6 +119,7 @@ impl Persist for MemoryPersist {
         lock.insert(key.to_string(), value.to_owned());
         Ok(())
     }
+
     fn get(&self, key: &PersistKey) -> Result<Option<Vec<u8>>> {
         let lock = self.inner.lock().unwrap();
         Ok(lock.get(&key.to_string()).cloned())
@@ -141,29 +148,28 @@ impl FilePersist {
 impl Persist for FilePersist {
     #[cfg(not(unix))]
     fn put(&self, key: &PersistKey, value: &[u8]) -> Result<()> {
-        let f_name = file_name_of(&self.dir, key);
-        fs::write(f_name, value).map_err(Error::from)
+        fs::write(key.path_in(&self.dir), value).map_err(Error::from)
     }
 
     #[cfg(unix)]
     fn put(&self, key: &PersistKey, value: &[u8]) -> Result<()> {
-        let f_name = file_name_of(&self.dir, key);
+        let path = key.path_from(&self.dir);
         match key.kind {
             PersistKind::AccountPrivateKey | PersistKind::PrivateKey => fs::OpenOptions::new()
                 .mode(0o600)
                 .write(true)
                 .truncate(true)
                 .create(true)
-                .open(f_name)?
+                .open(path)?
                 .write_all(value)
                 .map_err(Error::from),
-            PersistKind::Certificate => fs::write(f_name, value).map_err(Error::from),
+            PersistKind::Certificate => fs::write(path, value).map_err(Error::from),
         }
     }
 
     fn get(&self, key: &PersistKey) -> Result<Option<Vec<u8>>> {
-        let f_name = file_name_of(&self.dir, key);
-        let ret = if let Ok(mut file) = fs::File::open(f_name) {
+        let path = key.path_in(&self.dir);
+        let ret = if let Ok(mut file) = fs::File::open(path) {
             let mut v = vec![];
             file.read_to_end(&mut v)?;
             Some(v)
@@ -172,10 +178,4 @@ impl Persist for FilePersist {
         };
         Ok(ret)
     }
-}
-
-fn file_name_of(dir: &Path, key: &PersistKey) -> PathBuf {
-    let mut f_name = dir.join(key.to_string());
-    f_name.set_extension(key.kind.name());
-    f_name
 }
