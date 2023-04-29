@@ -9,7 +9,7 @@ use std::{
     collections::hash_map::{DefaultHasher, HashMap},
     fs,
     hash::{Hash, Hasher},
-    io::Read,
+    io::{Read, Write},
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
@@ -153,7 +153,7 @@ impl Persist for FilePersist {
 
     #[cfg(unix)]
     fn put(&self, key: &PersistKey, value: &[u8]) -> Result<()> {
-        let path = key.path_from(&self.dir);
+        let path = key.path_in(&self.dir);
         match key.kind {
             PersistKind::AccountPrivateKey | PersistKind::PrivateKey => fs::OpenOptions::new()
                 .mode(0o600)
